@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>تحدّي العيلة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E1633;
+    --bg2:#0A1029;
+    --card:#16204A;
+    --card2:#1C2A5C;
+    --line:#2A3B72;
+    --gold:#E8B84B;
+    --gold-soft:#F2D58A;
+    --cream:#F5EFE0;
+    --muted:#8A93B8;
+    --green:#46C28A;
+    --red:#E0655E;
+    --shadow:0 24px 60px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Tajawal',sans-serif;
+    color:var(--cream);
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(232,184,75,.16), transparent 60%),
+      radial-gradient(900px 500px at 50% 110%, rgba(70,194,138,.08), transparent 60%),
+      linear-gradient(180deg,var(--bg),var(--bg2));
+    min-height:100%;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:28px 16px 60px;
+  }
+  .stage{width:100%;max-width:640px}
+
+  /* header */
+  .crown{
+    text-align:center;margin-bottom:22px;
+  }
+  .crown .spark{
+    font-size:13px;letter-spacing:4px;color:var(--gold);
+    font-weight:700;opacity:.9;
+  }
+  .crown h1{
+    font-family:'Lalezar',cursive;
+    font-size:clamp(40px,9vw,64px);
+    line-height:1;
+    color:var(--cream);
+    text-shadow:0 0 28px rgba(232,184,75,.25);
+    margin:6px 0 4px;
+  }
+  .crown h1 b{color:var(--gold)}
+  .crown p{color:var(--muted);font-size:15px}
+
+  .panel{
+    background:linear-gradient(180deg,var(--card),var(--card2));
+    border:1px solid var(--line);
+    border-radius:24px;
+    box-shadow:var(--shadow);
+    padding:26px 22px;
+  }
+
+  .screen{display:none}
+  .screen.on{display:block;animation:rise .45s ease both}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  /* name picker */
+  .lead{font-size:18px;font-weight:700;margin-bottom:4px}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:18px}
+  .players{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .player{
+    position:relative;
+    background:rgba(255,255,255,.03);
+    border:1.5px solid var(--line);
+    border-radius:16px;
+    padding:18px 12px;
+    text-align:center;
+    cursor:pointer;
+    transition:transform .15s, border-color .15s, background .15s;
+    font-weight:700;font-size:18px;
+  }
+  .player .av{
+    width:46px;height:46px;border-radius:50%;
+    margin:0 auto 8px;
+    display:grid;place-items:center;
+    font-family:'Lalezar';font-size:22px;color:var(--bg);
+    background:linear-gradient(160deg,var(--gold-soft),var(--gold));
+  }
+  .player:hover{transform:translateY(-3px);border-color:var(--gold)}
+  .player.done{opacity:.45;cursor:not-allowed;border-style:dashed}
+  .player.done:hover{transform:none;border-color:var(--line)}
+  .player .tag{
+    display:none;position:absolute;top:8px;left:8px;
+    font-size:11px;font-weight:700;color:var(--green);
+    background:rgba(70,194,138,.12);padding:3px 8px;border-radius:20px;
+  }
+  .player.done .tag{display:block}
+
+  /* quiz */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .who{font-weight:700}
+  .who .dot{color:var(--gold)}
+  .count{color:var(--muted);font-size:14px;font-weight:700}
+  .bar{height:8px;background:rgba(255,255,255,.06);border-radius:20px;overflow:hidden;margin-bottom:22px}
+  .bar i{display:block;height:100%;width:0;border-radius:20px;background:linear-gradient(90deg,var(--gold),var(--gold-soft));transition:width .35s}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:2px;color:var(--gold);margin-bottom:8px}
+  .q{font-size:22px;font-weight:700;line-height:1.5;margin-bottom:20px;min-height:66px}
+  .opts{display:grid;gap:10px}
+  .opt{
+    background:rgba(255,255,255,.03);
+    border:1.5px solid var(--line);
+    border-radius:14px;padding:15px 16px;
+    cursor:pointer;font-size:17px;font-weight:500;
+    transition:border-color .15s, background .15s, transform .1s;
+    text-align:right;
+  }
+  .opt:hover{border-color:var(--gold)}
+  .opt.sel{border-color:var(--gold);background:rgba(232,184,75,.12)}
+  .nav{display:flex;gap:12px;margin-top:22px}
+  .btn{
+    flex:1;border:none;border-radius:14px;padding:15px;
+    font-family:'Tajawal';font-weight:800;font-size:17px;cursor:pointer;
+    transition:transform .1s, opacity .15s;
+  }
+  .btn:active{transform:scale(.98)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn.gold{background:linear-gradient(160deg,var(--gold-soft),var(--gold));color:var(--bg)}
+  .btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--cream)}
+
+  /* result */
+  .scorebig{text-align:center;margin-bottom:6px}
+  .scorebig .num{font-family:'Lalezar';font-size:72px;color:var(--gold);line-height:1}
+  .scorebig .num small{font-size:30px;color:var(--muted)}
+  .scorebig .name{font-size:18px;font-weight:700;margin-top:2px}
+  .blurb{text-align:center;color:var(--muted);margin:10px 0 22px}
+
+  .lbtitle{display:flex;align-items:center;gap:8px;font-weight:800;font-size:16px;margin:6px 0 14px}
+  .lbtitle::before{content:"🏆";font-size:18px}
+  .row{
+    display:flex;align-items:center;gap:12px;
+    background:rgba(255,255,255,.03);
+    border:1px solid var(--line);
+    border-radius:14px;padding:12px 14px;margin-bottom:8px;
+  }
+  .row.win{border-color:var(--gold);background:rgba(232,184,75,.1)}
+  .rank{
+    width:30px;height:30px;border-radius:50%;flex:0 0 auto;
+    display:grid;place-items:center;font-weight:800;font-size:14px;
+    background:rgba(255,255,255,.06);color:var(--cream);
+  }
+  .row.win .rank{background:var(--gold);color:var(--bg)}
+  .row .rn{flex:1;font-weight:700}
+  .row .rs{font-weight:800;color:var(--gold)}
+  .row.pending{opacity:.5;border-style:dashed}
+  .row.pending .rs{color:var(--muted);font-weight:500}
+
+  .state{text-align:center;color:var(--muted);padding:24px 0;font-size:15px}
+  .err{
+    background:rgba(224,101,94,.1);border:1px solid var(--red);
+    color:#ffd9d6;border-radius:14px;padding:14px;font-size:14px;margin-bottom:16px;line-height:1.6
+  }
+  .foot{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
+  a{color:var(--gold-soft)}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="crown">
+    <div class="spark">▴ ليلة الأسئلة ▴</div>
+    <h1>تحدّي <b>العيلة</b></h1>
+    <p>٢٠ سؤال · سياسة · طب · معلومات عامة</p>
+  </div>
+
+  <div class="panel">
+    <!-- 1: pick name -->
+    <section id="s-pick" class="screen on">
+      <div id="cfgErr"></div>
+      <div class="lead">مين أنت؟</div>
+      <div class="sub">اختر اسمك. كل واحد يلعب مرة وحدة بس.</div>
+      <div id="players" class="players"></div>
+      <div id="pickState" class="state" style="display:none">… يحمّل النتائج</div>
+    </section>
+
+    <!-- 2: quiz -->
+    <section id="s-quiz" class="screen">
+      <div class="topbar">
+        <div class="who">يلعب: <span class="dot" id="curName">—</span></div>
+        <div class="count"><span id="qNow">1</span> / 20</div>
+      </div>
+      <div class="bar"><i id="prog"></i></div>
+      <div class="eyebrow" id="cat">سياسة</div>
+      <div class="q" id="qText">…</div>
+      <div class="opts" id="opts"></div>
+      <div class="nav">
+        <button class="btn ghost" id="prevBtn">السابق</button>
+        <button class="btn gold" id="nextBtn" disabled>التالي</button>
+      </div>
+    </section>
+
+    <!-- 3: result -->
+    <section id="s-done" class="screen">
+      <div class="scorebig">
+        <div class="num"><span id="finalScore">0</span><small>/20</small></div>
+        <div class="name" id="finalName"></div>
+      </div>
+      <div class="blurb" id="blurb"></div>
+      <div class="lbtitle">لوحة الصدارة</div>
+      <div id="board"></div>
+      <div id="boardState" class="state">… يحمّل لوحة الصدارة</div>
+    </section>
+  </div>
+
+  <div class="foot">شارك الرابط مع العيلة — النتائج تتحدّث لحظياً عبر Firebase</div>
+</div>
+
+<script type="module">
+/* ============================================================
+   ① حطّ إعدادات Firebase تبعك هنا
+   من: console.firebase.google.com ← Project settings ← Web app
+   ============================================================ */
+const firebaseConfig = {
+  apiKey:            "PUT_API_KEY_HERE",
+  authDomain:        "PUT_PROJECT.firebaseapp.com",
+  projectId:         "PUT_PROJECT_ID_HERE",
+  storageBucket:     "PUT_PROJECT.appspot.com",
+  messagingSenderId: "PUT_SENDER_ID_HERE",
+  appId:             "PUT_APP_ID_HERE"
+};
+/* ============================================================ */
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, doc, getDoc, setDoc, collection, getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const PLAYERS = [
+  { id:"osama",   name:"أسامة" },
+  { id:"mohammed",name:"محمد"  },
+  { id:"suhad",   name:"سهاد"  },
+  { id:"maher",   name:"ماهر"  },
+  { id:"sara",    name:"سارة"  },
+  { id:"sumaya",  name:"سمية"  },
+];
+
+const QUESTIONS = [
+  // سياسة
+  {cat:"سياسة", q:"ما عاصمة المملكة العربية السعودية؟", o:["الرياض","جدة","مكة المكرمة","الدمام"], a:0},
+  {cat:"سياسة", q:"كم عدد الأعضاء الدائمين في مجلس الأمن الدولي؟", o:["5","7","10","15"], a:0},
+  {cat:"سياسة", q:"أين يقع المقر الرئيسي للأمم المتحدة؟", o:["نيويورك","جنيف","باريس","لندن"], a:0},
+  {cat:"سياسة", q:"كم عدد الدول الأعضاء في جامعة الدول العربية؟", o:["22","18","25","20"], a:0},
+  {cat:"سياسة", q:"ما أكبر دولة في العالم من حيث المساحة؟", o:["روسيا","كندا","الصين","الولايات المتحدة"], a:0},
+  {cat:"سياسة", q:"من مؤسس المملكة العربية السعودية الحديثة؟", o:["الملك عبدالعزيز","الملك سعود","الملك فيصل","الملك فهد"], a:0},
+  {cat:"سياسة", q:"ما عملة اليابان؟", o:["الين","اليوان","الوون","الروبية"], a:0},
+  // طب
+  {cat:"طب", q:"كم عدد العظام في جسم الإنسان البالغ؟", o:["206","201","230","180"], a:0},
+  {cat:"طب", q:"ما العضو المسؤول عن ضخّ الدم في الجسم؟", o:["القلب","الرئة","الكبد","الكلية"], a:0},
+  {cat:"طب", q:"أي فيتامين ينتجه الجسم عند التعرّض للشمس؟", o:["فيتامين د","فيتامين ج","فيتامين أ","فيتامين ب"], a:0},
+  {cat:"طب", q:"كم عدد غرف القلب؟", o:["4","2","3","5"], a:0},
+  {cat:"طب", q:"ما أكبر عضو في جسم الإنسان؟", o:["الجلد","الكبد","الدماغ","الرئة"], a:0},
+  {cat:"طب", q:"ما الخلايا المسؤولة عن نقل الأكسجين في الدم؟", o:["كريات الدم الحمراء","كريات الدم البيضاء","الصفائح الدموية","البلازما"], a:0},
+  {cat:"طب", q:"كم عدد الأسنان الكاملة لدى الإنسان البالغ؟", o:["32","28","30","36"], a:0},
+  // عام
+  {cat:"معلومات عامة", q:"ما أكبر كوكب في المجموعة الشمسية؟", o:["المشتري","زحل","الأرض","نبتون"], a:0},
+  {cat:"معلومات عامة", q:"ما أكبر محيط في العالم؟", o:["المحيط الهادئ","المحيط الأطلسي","المحيط الهندي","المحيط المتجمد"], a:0},
+  {cat:"معلومات عامة", q:"ما أسرع حيوان برّي في العالم؟", o:["الفهد","الأسد","الحصان","الغزال"], a:0},
+  {cat:"معلومات عامة", q:"كم عدد قارات العالم؟", o:["7","5","6","8"], a:0},
+  {cat:"معلومات عامة", q:"ما المعدن السائل في درجة حرارة الغرفة؟", o:["الزئبق","الحديد","الرصاص","النحاس"], a:0},
+  {cat:"معلومات عامة", q:"كم عدد أيام السنة الكبيسة؟", o:["366","365","364","367"], a:0},
+];
+
+const COL = "quiz_results";
+let db=null, fbOk=false;
+try{
+  const app = initializeApp(firebaseConfig);
+  db = getFirestore(app);
+  fbOk = !firebaseConfig.apiKey.startsWith("PUT_");
+}catch(e){ fbOk=false; }
+
+/* state */
+let me=null;                       // {id,name}
+let answers=new Array(20).fill(null);
+let idx=0;
+
+const $=id=>document.getElementById(id);
+function show(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('on'));$(s).classList.add('on');}
+
+/* ---- config warning ---- */
+if(!fbOk){
+  $('cfgErr').innerHTML =
+   '<div class="err">⚠️ <b>Firebase غير مربوط بعد.</b> افتح الملف وحطّ إعداداتك في <code>firebaseConfig</code> بالأعلى. '+
+   'حالياً تقدر تلعب لكن النتائج ما تنحفظ بين الأجهزة.</div>';
+}
+
+/* ---- helpers: firestore ---- */
+async function getDoneMap(){
+  const done={};
+  if(!fbOk) return done;
+  try{
+    const snap = await getDocs(collection(db,COL));
+    snap.forEach(d=>{ done[d.id]=d.data(); });
+  }catch(e){ console.error(e); }
+  return done;
+}
+async function alreadyPlayed(id){
+  if(!fbOk) return false;
+  try{ const d=await getDoc(doc(db,COL,id)); return d.exists(); }
+  catch(e){ return false; }
+}
+async function saveResult(rec){
+  if(!fbOk) return true;
+  try{ await setDoc(doc(db,COL,rec.id), rec, {merge:false}); return true; }
+  catch(e){ console.error(e); return false; }
+}
+
+/* ---- screen 1: players ---- */
+async function renderPlayers(){
+  $('pickState').style.display='block';
+  const done = await getDoneMap();
+  $('pickState').style.display='none';
+  const wrap=$('players'); wrap.innerHTML='';
+  PLAYERS.forEach(p=>{
+    const el=document.createElement('div');
+    el.className='player'+(done[p.id]?' done':'');
+    el.innerHTML=`<span class="tag">لعب ✓</span><div class="av">${p.name[0]}</div>${p.name}`;
+    if(!done[p.id]) el.onclick=()=>startQuiz(p);
+    wrap.appendChild(el);
+  });
+}
+
+/* ---- screen 2: quiz ---- */
+async function startQuiz(p){
+  // double-check at the door
+  if(await alreadyPlayed(p.id)){ alert(p.name+' خلّص دوره من قبل.'); renderPlayers(); return; }
+  me=p; answers=new Array(20).fill(null); idx=0;
+  $('curName').textContent=p.name;
+  show('s-quiz'); renderQ();
+}
+function renderQ(){
+  const item=QUESTIONS[idx];
+  $('cat').textContent=item.cat;
+  $('qText').textContent=item.q;
+  $('qNow').textContent=idx+1;
+  $('prog').style.width=((idx+1)/20*100)+'%';
+  const ow=$('opts'); ow.innerHTML='';
+  item.o.forEach((txt,i)=>{
+    const o=document.createElement('div');
+    o.className='opt'+(answers[idx]===i?' sel':'');
+    o.textContent=txt;
+    o.onclick=()=>{answers[idx]=i;renderQ();};
+    ow.appendChild(o);
+  });
+  $('prevBtn').disabled = idx===0;
+  $('nextBtn').disabled = answers[idx]===null;
+  $('nextBtn').textContent = idx===19 ? 'سلّم إجاباتي' : 'التالي';
+}
+$('prevBtn').onclick=()=>{ if(idx>0){idx--;renderQ();} };
+$('nextBtn').onclick=async()=>{
+  if(answers[idx]===null) return;
+  if(idx<19){ idx++; renderQ(); return; }
+  await submit();
+};
+
+/* ---- screen 3: result + board ---- */
+async function submit(){
+  $('nextBtn').disabled=true; $('nextBtn').textContent='… يحفظ';
+  let score=0;
+  answers.forEach((a,i)=>{ if(a===QUESTIONS[i].a) score++; });
+  const rec={ id:me.id, name:me.name, score, total:20, ts:Date.now() };
+  // guard re-submit
+  if(await alreadyPlayed(me.id)){ alert(me.name+' مُسجّل من قبل.'); show('s-pick'); renderPlayers(); return; }
+  await saveResult(rec);
+  $('finalScore').textContent=score;
+  $('finalName').textContent=me.name;
+  $('blurb').textContent = score>=16 ? 'أداء بطولي! 🔥' : score>=10 ? 'نتيجة محترمة 👏' : 'الجاية أحسن 💪';
+  show('s-done');
+  renderBoard(rec);
+}
+async function renderBoard(myRec){
+  $('boardState').style.display='block';
+  const done=await getDoneMap();
+  if(fbOk && myRec) done[myRec.id]=myRec; else if(myRec) done[myRec.id]=myRec;
+  $('boardState').style.display='none';
+  const played = PLAYERS.filter(p=>done[p.id]).map(p=>done[p.id]).sort((a,b)=>b.score-a.score || a.ts-b.ts);
+  const pending = PLAYERS.filter(p=>!done[p.id]);
+  const top = played.length ? played[0].score : -1;
+  const board=$('board'); board.innerHTML='';
+  played.forEach((r,i)=>{
+    const win = r.score===top;
+    const row=document.createElement('div');
+    row.className='row'+(win?' win':'');
+    row.innerHTML=`<div class="rank">${i+1}</div><div class="rn">${r.name}${win?' 👑':''}</div><div class="rs">${r.score}/20</div>`;
+    board.appendChild(row);
+  });
+  pending.forEach(p=>{
+    const row=document.createElement('div');
+    row.className='row pending';
+    row.innerHTML=`<div class="rank">–</div><div class="rn">${p.name}</div><div class="rs">لسا ما لعب</div>`;
+    board.appendChild(row);
+  });
+}
+
+/* boot */
+renderPlayers();
+</script>
+</body>
+</html>
