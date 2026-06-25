@@ -1,281 +1,430 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Insulin Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
 <style>
-  :root {
-    --bg: #f4f6f9;
-    --card: #ffffff;
-    --ink: #1c2733;
-    --muted: #6b7785;
-    --line: #e2e8f0;
-    --accent: #2563eb;
-    --accent-soft: #eef4ff;
-    --danger: #dc2626;
-    --radius: 14px;
+  :root{
+    --paper:#F4F6F8;
+    --card:#FFFFFF;
+    --ink:#16202B;
+    --ink-soft:#5A6B7B;
+    --line:#DDE3E9;
+    --accent:#0E7C7B;
+    --accent-dark:#0A5E5D;
+    --rapid:#E8833A;
+    --long:#2E74C4;
+    --other:#7A8694;
+    --danger:#C0392B;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(22,32,43,.05), 0 8px 24px rgba(22,32,43,.06);
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--ink);
-    line-height: 1.5;
-    padding: 20px 16px 60px;
-    max-width: 560px;
-    margin: 0 auto;
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Inter",system-ui,sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    padding:0 16px 64px;
   }
-  h1 { font-size: 22px; font-weight: 600; margin-bottom: 2px; }
-  .sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
-  .card {
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 18px;
-    margin-bottom: 16px;
+  .wrap{max-width:680px;margin:0 auto;}
+
+  /* Header */
+  header{
+    display:flex;align-items:baseline;justify-content:space-between;
+    gap:12px;padding:28px 0 20px;flex-wrap:wrap;
   }
-  label { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
-  .row { display: flex; gap: 10px; margin-bottom: 14px; }
-  .row > div { flex: 1; }
-  input, select {
-    width: 100%;
-    padding: 11px 12px;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    font-size: 15px;
-    font-family: inherit;
-    background: #fff;
-    color: var(--ink);
+  .brand{display:flex;align-items:center;gap:12px;}
+  .vial{
+    width:26px;height:26px;flex:none;
+    border:2px solid var(--ink);border-radius:5px 5px 7px 7px;
+    position:relative;background:
+      linear-gradient(to top, var(--accent) 0 42%, transparent 42%);
   }
-  input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
-  button {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    background: var(--accent);
-    color: #fff;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
+  .vial::before{content:"";position:absolute;top:-6px;left:5px;right:5px;height:5px;background:var(--ink);border-radius:2px;}
+  h1{
+    font-family:"Space Grotesk",sans-serif;
+    font-weight:600;font-size:1.4rem;letter-spacing:-.01em;margin:0;
   }
-  button:active { transform: scale(0.99); }
-  .stats { display: flex; gap: 10px; margin-bottom: 16px; }
-  .stat {
-    flex: 1;
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 14px;
-    text-align: center;
+  .status{
+    font-family:"IBM Plex Mono",monospace;font-size:.72rem;
+    color:var(--ink-soft);display:flex;align-items:center;gap:7px;
   }
-  .stat .num { font-size: 24px; font-weight: 700; color: var(--accent); }
-  .stat .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-top: 2px; }
-  h2 { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
-  .entry {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--line);
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--other);}
+  .dot.on{background:var(--accent);}
+
+  /* Banner */
+  .banner{
+    background:#FFF6E9;border:1px solid #F2D7A6;color:#7A5418;
+    border-radius:var(--radius);padding:14px 16px;margin-bottom:20px;
+    font-size:.9rem;display:none;
   }
-  .entry:last-child { border-bottom: none; }
-  .entry .when { font-size: 13px; color: var(--muted); }
-  .entry .type { font-size: 12px; color: var(--accent); font-weight: 600; }
-  .entry .dose { font-size: 17px; font-weight: 700; }
-  .entry .note { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .del {
-    background: none;
-    color: var(--danger);
-    width: auto;
-    padding: 6px 10px;
-    font-size: 12px;
-    font-weight: 500;
+  .banner code{font-family:"IBM Plex Mono",monospace;background:#0000000d;padding:1px 5px;border-radius:4px;}
+
+  /* Summary */
+  .summary{
+    display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;
   }
-  .empty { color: var(--muted); font-size: 14px; text-align: center; padding: 20px 0; }
-  .tools { display: flex; gap: 10px; margin-top: 8px; }
-  .tools button { background: #fff; color: var(--ink); border: 1px solid var(--line); font-size: 13px; font-weight: 500; padding: 10px; }
-  .disclaimer { font-size: 12px; color: var(--muted); text-align: center; margin-top: 24px; line-height: 1.6; }
+  .stat{
+    flex:1;min-width:120px;background:var(--card);border:1px solid var(--line);
+    border-radius:var(--radius);padding:14px 16px;
+  }
+  .stat .k{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);}
+  .stat .v{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:1.5rem;margin-top:2px;}
+  .stat .v small{font-size:.8rem;color:var(--ink-soft);font-weight:500;}
+
+  /* Card / form */
+  .card{
+    background:var(--card);border:1px solid var(--line);
+    border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:20px;margin-bottom:24px;
+  }
+  .card h2{
+    font-family:"Space Grotesk",sans-serif;font-size:.8rem;font-weight:600;
+    text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);
+    margin:0 0 16px;
+  }
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .field.full{grid-column:1 / -1;}
+  label{font-size:.78rem;font-weight:500;color:var(--ink-soft);}
+  input,select{
+    font-family:inherit;font-size:.95rem;color:var(--ink);
+    background:var(--paper);border:1px solid var(--line);border-radius:9px;
+    padding:10px 12px;width:100%;
+  }
+  input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent);}
+  .units-input{font-family:"IBM Plex Mono",monospace;font-weight:600;}
+
+  .seg{display:flex;gap:6px;}
+  .seg button{
+    flex:1;font-family:inherit;font-size:.82rem;font-weight:500;cursor:pointer;
+    padding:9px 6px;border-radius:9px;border:1px solid var(--line);
+    background:var(--paper);color:var(--ink-soft);
+  }
+  .seg button[aria-pressed="true"]{color:#fff;border-color:transparent;}
+  .seg button.rapid[aria-pressed="true"]{background:var(--rapid);}
+  .seg button.long[aria-pressed="true"]{background:var(--long);}
+  .seg button.other[aria-pressed="true"]{background:var(--other);}
+
+  .btn{
+    font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:.95rem;
+    color:#fff;background:var(--accent);border:none;border-radius:10px;
+    padding:13px 18px;cursor:pointer;width:100%;margin-top:4px;
+    transition:background .15s ease;
+  }
+  .btn:hover{background:var(--accent-dark);}
+  .btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+
+  /* Log */
+  .daygroup{margin-bottom:22px;}
+  .dayhead{
+    font-family:"Space Grotesk",sans-serif;font-size:.76rem;font-weight:600;
+    text-transform:uppercase;letter-spacing:.07em;color:var(--ink-soft);
+    padding:0 4px 8px;display:flex;justify-content:space-between;
+  }
+  .entry{
+    background:var(--card);border:1px solid var(--line);border-left:4px solid var(--other);
+    border-radius:12px;padding:14px 16px;margin-bottom:8px;
+    display:flex;align-items:center;gap:14px;
+  }
+  .entry.rapid{border-left-color:var(--rapid);}
+  .entry.long{border-left-color:var(--long);}
+  .readout{
+    font-family:"IBM Plex Mono",monospace;font-weight:600;
+    font-size:1.55rem;line-height:1;letter-spacing:-.02em;
+    font-variant-numeric:tabular-nums;min-width:62px;text-align:right;
+  }
+  .readout small{font-size:.65rem;color:var(--ink-soft);margin-left:2px;}
+  .meta{flex:1;min-width:0;}
+  .meta .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .chip{
+    font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;
+    text-transform:uppercase;letter-spacing:.04em;color:#fff;background:var(--other);
+  }
+  .chip.rapid{background:var(--rapid);}
+  .chip.long{background:var(--long);}
+  .name{font-weight:600;font-size:.95rem;}
+  .time{font-family:"IBM Plex Mono",monospace;font-size:.74rem;color:var(--ink-soft);}
+  .sub{font-size:.82rem;color:var(--ink-soft);margin-top:3px;}
+  .del{
+    flex:none;border:none;background:none;cursor:pointer;color:var(--ink-soft);
+    font-size:1.1rem;padding:6px;border-radius:8px;line-height:1;
+  }
+  .del:hover{color:var(--danger);background:#C0392B12;}
+
+  .empty{
+    text-align:center;color:var(--ink-soft);padding:40px 16px;font-size:.92rem;
+  }
+  footer{text-align:center;color:var(--ink-soft);font-size:.74rem;padding:8px 0;}
+
+  @media (max-width:520px){
+    .grid{grid-template-columns:1fr;}
+    .readout{font-size:1.35rem;min-width:54px;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
 </style>
 </head>
 <body>
-  <h1>Insulin Log</h1>
-  <p class="sub">Track daily insulin doses. Data saved on this device only.</p>
+<div class="wrap">
 
-  <div class="card">
-    <div class="row">
-      <div>
-        <label for="date">Date</label>
-        <input type="date" id="date">
-      </div>
-      <div>
-        <label for="time">Time</label>
-        <input type="time" id="time">
-      </div>
+  <header>
+    <div class="brand">
+      <div class="vial" aria-hidden="true"></div>
+      <h1>Insulin Log</h1>
     </div>
-    <div class="row">
-      <div>
-        <label for="type">Type</label>
-        <select id="type">
-          <option>Rapid (bolus)</option>
-          <option>Long (basal)</option>
-          <option>Mixed</option>
-          <option>Other</option>
-        </select>
-      </div>
-      <div>
-        <label for="units">Units</label>
-        <input type="number" id="units" min="0" step="0.5" placeholder="e.g. 12">
-      </div>
-    </div>
-    <div class="row">
-      <div>
-        <label for="note">Note (optional)</label>
-        <input type="text" id="note" placeholder="before lunch, BG 140...">
-      </div>
-    </div>
-    <button onclick="addEntry()">Log dose</button>
+    <div class="status"><span class="dot" id="dot"></span><span id="statusText">connecting…</span></div>
+  </header>
+
+  <div class="banner" id="banner">
+    Firebase not set up. Paste your project config into <code>firebaseConfig</code> in this file's script.
   </div>
 
-  <div class="stats">
-    <div class="stat"><div class="num" id="todayTotal">0</div><div class="lbl">Today (units)</div></div>
-    <div class="stat"><div class="num" id="todayCount">0</div><div class="lbl">Today (doses)</div></div>
-    <div class="stat"><div class="num" id="avg7">0</div><div class="lbl">7-day avg/day</div></div>
+  <div class="summary">
+    <div class="stat"><div class="k">Today · total</div><div class="v" id="sumUnits">0<small> U</small></div></div>
+    <div class="stat"><div class="k">Today · doses</div><div class="v" id="sumDoses">0</div></div>
   </div>
 
   <div class="card">
-    <h2>History</h2>
-    <div id="list"></div>
-    <div class="tools">
-      <button onclick="exportData()">Export JSON</button>
-      <button onclick="clearAll()">Clear all</button>
+    <h2>Log a dose</h2>
+    <div class="grid">
+      <div class="field full">
+        <label>Category</label>
+        <div class="seg" id="seg">
+          <button type="button" class="rapid" data-cat="rapid" aria-pressed="true">Rapid-acting</button>
+          <button type="button" class="long" data-cat="long" aria-pressed="false">Long-acting</button>
+          <button type="button" class="other" data-cat="other" aria-pressed="false">Other</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="units">Units (U)</label>
+        <input class="units-input" id="units" type="number" step="0.5" min="0" inputmode="decimal" placeholder="0" />
+      </div>
+      <div class="field">
+        <label for="when">Time</label>
+        <input id="when" type="datetime-local" />
+      </div>
+      <div class="field">
+        <label for="name">Insulin name <span style="font-weight:400">(optional)</span></label>
+        <input id="name" type="text" placeholder="e.g. Humalog" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label for="glucose">Glucose <span style="font-weight:400">(optional)</span></label>
+        <input id="glucose" type="number" step="0.1" min="0" inputmode="decimal" placeholder="reading" />
+      </div>
+      <div class="field full">
+        <label for="note">Note <span style="font-weight:400">(optional)</span></label>
+        <input id="note" type="text" placeholder="before lunch, correction…" autocomplete="off" />
+      </div>
     </div>
+    <button class="btn" id="save" disabled>Log dose</button>
   </div>
 
-  <p class="disclaimer">
-    Personal log only. Not medical advice. Follow the dosing your doctor or care team gives you. Always confirm doses against your own records before injecting.
-  </p>
+  <div id="log"><div class="empty">No doses logged yet.</div></div>
 
-<script>
-  const KEY = 'insulin_log_v1';
-  let entries = [];
+  <footer>Personal record only. Not medical advice.</footer>
+</div>
 
-  function load() {
-    try {
-      const raw = localStorage.getItem(KEY);
-      entries = raw ? JSON.parse(raw) : [];
-    } catch (e) { entries = []; }
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import {
+    getFirestore, collection, addDoc, deleteDoc, doc,
+    query, orderBy, onSnapshot, serverTimestamp, Timestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // ===== 1. PASTE YOUR FIREBASE CONFIG HERE =====
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+  // ==============================================
+
+  const $ = (id) => document.getElementById(id);
+  const dot = $("dot"), statusText = $("statusText");
+
+  if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+    $("banner").style.display = "block";
+    statusText.textContent = "no config";
   }
 
-  function save() {
-    localStorage.setItem(KEY, JSON.stringify(entries));
+  let db, uid = null;
+  let selectedCat = "rapid";
+
+  // Category selector
+  $("seg").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-cat]");
+    if (!b) return;
+    selectedCat = b.dataset.cat;
+    [...$("seg").children].forEach(x => x.setAttribute("aria-pressed", x === b));
+  });
+
+  // Default time = now (local)
+  function nowLocal(){
+    const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0,16);
   }
+  $("when").value = nowLocal();
 
-  function todayStr() {
-    const d = new Date();
-    const off = d.getTimezoneOffset();
-    return new Date(d - off * 60000).toISOString().slice(0, 10);
-  }
-
-  function nowTime() {
-    const d = new Date();
-    return d.toTimeString().slice(0, 5);
-  }
-
-  function addEntry() {
-    const date = document.getElementById('date').value;
-    const time = document.getElementById('time').value;
-    const type = document.getElementById('type').value;
-    const units = parseFloat(document.getElementById('units').value);
-    const note = document.getElementById('note').value.trim();
-
-    if (!date || !time || isNaN(units) || units < 0) {
-      alert('Need date, time, and units.');
-      return;
-    }
-    entries.push({ id: Date.now(), date, time, type, units, note });
-    save();
-    document.getElementById('units').value = '';
-    document.getElementById('note').value = '';
-    document.getElementById('time').value = nowTime();
-    render();
-  }
-
-  function delEntry(id) {
-    entries = entries.filter(e => e.id !== id);
-    save();
-    render();
-  }
-
-  function clearAll() {
-    if (confirm('Delete ALL entries? Cannot undo.')) {
-      entries = [];
-      save();
-      render();
-    }
-  }
-
-  function exportData() {
-    const blob = new Blob([JSON.stringify(entries, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'insulin_log.json';
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  function render() {
-    entries.sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
-    const t = todayStr();
-    const todays = entries.filter(e => e.date === t);
-    const total = todays.reduce((s, e) => s + e.units, 0);
-    document.getElementById('todayTotal').textContent = round(total);
-    document.getElementById('todayCount').textContent = todays.length;
-
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 6);
-    const days = {};
-    entries.forEach(e => {
-      if (new Date(e.date) >= cutoff) {
-        days[e.date] = (days[e.date] || 0) + e.units;
-      }
+  // Init Firebase
+  try {
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    const auth = getAuth(app);
+    onAuthStateChanged(auth, (user) => {
+      if (user) { uid = user.uid; ready(); }
     });
-    const dayVals = Object.values(days);
-    const avg = dayVals.length ? dayVals.reduce((a, b) => a + b, 0) / dayVals.length : 0;
-    document.getElementById('avg7').textContent = round(avg);
+    signInAnonymously(auth).catch(err => {
+      statusText.textContent = "auth error";
+      console.error(err);
+    });
+  } catch (err) {
+    console.error("Firebase init failed:", err);
+  }
 
-    const list = document.getElementById('list');
-    if (entries.length === 0) {
-      list.innerHTML = '<div class="empty">No doses logged yet.</div>';
+  function ready(){
+    dot.classList.add("on");
+    statusText.textContent = "synced · " + uid.slice(0,6);
+    $("save").disabled = false;
+    watch();
+  }
+
+  // Save dose
+  $("save").addEventListener("click", async () => {
+    const units = parseFloat($("units").value);
+    if (!units || units <= 0) { $("units").focus(); return; }
+    const whenVal = $("when").value;
+    const taken = whenVal ? new Date(whenVal) : new Date();
+    const glucose = $("glucose").value ? parseFloat($("glucose").value) : null;
+
+    $("save").disabled = true;
+    try {
+      await addDoc(collection(db, "users", uid, "doses"), {
+        category: selectedCat,
+        name: $("name").value.trim() || null,
+        units,
+        glucose,
+        note: $("note").value.trim() || null,
+        taken: Timestamp.fromDate(taken),
+        created: serverTimestamp()
+      });
+      $("units").value = ""; $("name").value = "";
+      $("glucose").value = ""; $("note").value = "";
+      $("when").value = nowLocal();
+    } catch (err) {
+      console.error(err);
+      alert("Could not save. Check Firestore rules and connection.");
+    } finally {
+      $("save").disabled = false;
+    }
+  });
+
+  // Live read
+  function watch(){
+    const q = query(collection(db, "users", uid, "doses"), orderBy("taken", "desc"));
+    onSnapshot(q, (snap) => {
+      const rows = [];
+      snap.forEach(d => rows.push({ id: d.id, ...d.data() }));
+      render(rows);
+    }, (err) => {
+      console.error(err);
+      statusText.textContent = "read error";
+    });
+  }
+
+  const CAT_LABEL = { rapid: "Rapid", long: "Long", other: "Other" };
+  const fmtNum = (n) => Number.isInteger(n) ? n : n.toFixed(1);
+
+  function render(rows){
+    const log = $("log");
+
+    // Today summary
+    const today = new Date(); today.setHours(0,0,0,0);
+    let tUnits = 0, tDoses = 0;
+    rows.forEach(r => {
+      const t = r.taken?.toDate?.();
+      if (t && t >= today) { tUnits += r.units || 0; tDoses++; }
+    });
+    $("sumUnits").innerHTML = fmtNum(tUnits) + "<small> U</small>";
+    $("sumDoses").textContent = tDoses;
+
+    if (!rows.length) {
+      log.innerHTML = '<div class="empty">No doses logged yet.</div>';
       return;
     }
-    list.innerHTML = entries.map(e => `
-      <div class="entry">
-        <div>
-          <div class="type">${escape(e.type)}</div>
-          <div class="when">${e.date} · ${e.time}</div>
-          ${e.note ? `<div class="note">${escape(e.note)}</div>` : ''}
-        </div>
-        <div style="text-align:right; display:flex; align-items:center; gap:8px;">
-          <span class="dose">${round(e.units)} u</span>
-          <button class="del" onclick="delEntry(${e.id})">Delete</button>
-        </div>
-      </div>
-    `).join('');
+
+    // Group by day
+    const groups = {};
+    rows.forEach(r => {
+      const t = r.taken?.toDate?.() || new Date();
+      const key = t.toDateString();
+      (groups[key] = groups[key] || []).push({ r, t });
+    });
+
+    log.innerHTML = "";
+    for (const key in groups) {
+      const items = groups[key];
+      const dayUnits = items.reduce((s, x) => s + (x.r.units || 0), 0);
+      const g = document.createElement("div");
+      g.className = "daygroup";
+      const head = document.createElement("div");
+      head.className = "dayhead";
+      head.innerHTML = `<span>${dayLabel(items[0].t)}</span><span>${fmtNum(dayUnits)} U</span>`;
+      g.appendChild(head);
+
+      items.forEach(({ r, t }) => {
+        const cat = r.category || "other";
+        const el = document.createElement("div");
+        el.className = "entry " + cat;
+        el.innerHTML = `
+          <div class="readout">${fmtNum(r.units)}<small>U</small></div>
+          <div class="meta">
+            <div class="top">
+              <span class="chip ${cat}">${CAT_LABEL[cat] || "Other"}</span>
+              ${r.name ? `<span class="name">${esc(r.name)}</span>` : ""}
+              <span class="time">${timeLabel(t)}</span>
+            </div>
+            ${(r.glucose != null || r.note) ? `<div class="sub">${
+              r.glucose != null ? `Glucose ${fmtNum(r.glucose)}` : ""
+            }${r.glucose != null && r.note ? " · " : ""}${r.note ? esc(r.note) : ""}</div>` : ""}
+          </div>
+          <button class="del" title="Delete" aria-label="Delete dose">✕</button>`;
+        el.querySelector(".del").addEventListener("click", async () => {
+          if (!confirm("Delete this entry?")) return;
+          try { await deleteDoc(doc(db, "users", uid, "doses", r.id)); }
+          catch (e) { console.error(e); }
+        });
+        g.appendChild(el);
+      });
+      log.appendChild(g);
+    }
   }
 
-  function round(n) { return Math.round(n * 10) / 10; }
-  function escape(s) {
-    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function dayLabel(d){
+    const today = new Date(); today.setHours(0,0,0,0);
+    const that = new Date(d); that.setHours(0,0,0,0);
+    const diff = Math.round((today - that) / 86400000);
+    if (diff === 0) return "Today";
+    if (diff === 1) return "Yesterday";
+    return d.toLocaleDateString(undefined, { weekday:"short", month:"short", day:"numeric" });
   }
-
-  document.getElementById('date').value = todayStr();
-  document.getElementById('time').value = nowTime();
-  load();
-  render();
+  function timeLabel(d){
+    return d.toLocaleTimeString(undefined, { hour:"numeric", minute:"2-digit" });
+  }
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  }
 </script>
 </body>
 </html>
